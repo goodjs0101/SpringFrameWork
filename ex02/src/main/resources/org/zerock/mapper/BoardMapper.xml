@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.zerock.mapper.BoardMapper">
+  
+<select id="getList" resultType="org.zerock.domain.BoardVO">
+<![CDATA[select * from tbl_board where bno > 0]]>
+</select>
+
+<select id="read" resultType="org.zerock.domain.BoardVO">
+	select * from tbl_board where bno = #{bno}
+</select>
+
+<select id="getListWithPaging" resultType="org.zerock.domain.BoardVO">
+<![CDATA[
+ select
+   bno, title, content, writer, regdate, updatedate
+ from tbl_board
+ where bno > 0
+ order by bno desc, regdate DESC
+ LIMIT #{skip},10
+     ]]>
+</select>
+
+<select id="getTotalCount" resultType="int">
+	select count(*) from tbl_board where bno > 0
+</select>
+
+<insert id="insert">
+  insert into tbl_board (title,content,writer)
+  values (#{title}, #{content}, #{writer})
+</insert>
+
+<insert id="insertSelectKey">	
+	insert into tbl_board (bno,title,content, writer)
+	values (#{bno}, #{title}, #{content}, #{writer})
+</insert>
+
+<delete id="delete">
+	delete from tbl_board where bno = #{bno}
+</delete>
+
+<update id="update">
+	update tbl_board
+	set title = #{title},
+	content = #{content},
+	writer = #{writer},
+	updateDate = now()
+	where bno = #{bno}
+</update>
+<sql id="search">
+	<if test="searchType != null">
+		<if test="type == 'T'.toString()">and title like CONCAT('%', #{keyword}, '%') </if>
+		<if test="type == 'C'.toString()">and content like CONCAT('%', #{keyword}, '%') </if>
+		<if test="type == 'W'.toString()">and writer like CONCAT('%', #{keyword}, '%') </if>
+		<if test="type == 'TC'.toString()">and ( title like CONCAT('%', #{keyword}, '%') OR content like CONCAT('%', #{keyword}, '%')) </if>
+		<if test="type == 'CW'.toString()">and ( content like CONCAT('%', #{keyword}, '%') OR writer like CONCAT('%', #{keyword}, '%')) </if>
+		<if test="type == 'TCW'.toString()">and ( title like CONCAT('%', #{keyword}, '%') OR content like CONCAT('%', #{keyword}, '%') OR writer like CONCAT('%', #{keyword}, '%')) </if>
+	</if>
+</sql>
+
+<select id="listSearch" resultType="org.zerock.domain.BoardVO">
+<![CDATA[  
+  select * 
+  from tbl_board 
+  where bno > 0 
+]]>
+<include refid="search"/>
+<![CDATA[    
+  order by bno desc
+  limit #{pageNum},#{amount}
+]]>
+</select>
+<select id="listSearchCount" resultType="int">
+	<![CDATA[
+		select count(bno)
+		from tbl_board
+		where bno > 0
+	]]>
+	<include refid="search" />
+</select>
+</mapper>  
